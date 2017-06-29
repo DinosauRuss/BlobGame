@@ -26,6 +26,13 @@ class GreenBlob(Blob):
     def __init__(self, x_boundary, y_boundary):
         super().__init__(green, x_boundary, y_boundary)
 
+class GoldBlob(Blob):
+    def __init__(self, x_boundary, y_boundary, move_range):
+        super().__init__(gold, x_boundary, y_boundary, move_range)
+        self.x = int(width/2)
+        self.y = int(height/2)
+        self.size = 10
+
 def is_touching(b1, b2):
     '''determine if 2 blobs are 'touching' each other'''
     
@@ -80,11 +87,15 @@ def handle_collision(dict1, dict2):
             elif is_touching(blob1, blob2):
                 blob1 + blob2
                 del dict2[id2]
+
+def gold_blob(blob):
+    
+    pygame.draw.circle(game_display, blob.color, [blob.x, blob.y], blob.size)
     
 def draw_environment(list_of_blobs):
     game_display.fill((0,0,0))
 
-    reds, greens, blues = list_of_blobs
+    reds, greens, blues, goldie = list_of_blobs
     handle_collision(blues, reds)   # blue eats red
     handle_collision(greens, blues) # green eats blue
     handle_collision(reds, greens)  # red eats green
@@ -93,6 +104,7 @@ def draw_environment(list_of_blobs):
     red_collision(reds)
     green_collision(greens)
 
+    gold_blob(goldie)
     
     # draw blobs on the screen
     for blobContainer in reds, greens, blues:
@@ -110,8 +122,10 @@ def main():
     red_blobs = dict(enumerate([(RedBlob(width, height)) for i in range(10)]))
     blue_blobs = dict(enumerate([(BlueBlob(width, height)) for i in range(10)]))
     green_blobs = dict(enumerate([(GreenBlob(width, height)) for i in range(10)]))
+
+    goldie = GoldBlob(width, height, (0,0))
     
-    blobs_list = [red_blobs, green_blobs, blue_blobs] # list containg the blob dictionaries
+    blobs_list = [red_blobs, green_blobs, blue_blobs, goldie] # list containg the blob dictionaries
 
     
     while True:

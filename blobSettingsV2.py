@@ -15,6 +15,8 @@ FONT_NAME = 'garamond'
 
 img_dir = os.path.join(os.path.dirname(__file__), 'images')
 
-explosion_anim = {}
+explosion_anim = {'red': [],
+                  'green': [],
+                  'blue': []}
 
 

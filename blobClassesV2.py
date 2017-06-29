@@ -51,12 +51,12 @@ class Blob(pg.sprite.Sprite):
     
     
 class Explosion(pg.sprite.Sprite):
-    def __init__(self, center):
+    def __init__(self, center, color):
         super().__init__()
         
-        self.image = explosion_anim['frames'][0]
+        self.color = color
+        self.image = explosion_anim[self.color][0]
         self.rect = self.image.get_rect()
-        #~ self.rect.center = center
         self.pos = center
         self.rect.center = self.pos
         self.radius = 0
@@ -69,11 +69,11 @@ class Explosion(pg.sprite.Sprite):
         if now - self.last_update > self.frameRate:
             self.frame += 1
             self.last_update = now
-            if self.frame == len(explosion_anim['frames']):
+            if self.frame == len(explosion_anim[self.color]):
                 self.kill()
             else:
                 currentPos = self.rect.center
-                self.image = explosion_anim['frames'][self.frame]
+                self.image = explosion_anim[self.color][self.frame]
                 self.rect = self.image.get_rect()
                 self.rect.center = currentPos
         

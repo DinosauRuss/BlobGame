@@ -40,12 +40,12 @@ class Game():
                 (random.randrange(george.radius, sWidth-george.radius),\
                  random.randrange(george.radius, sHeight-george.radius))
             
-            #~ bill = Blob(color=GREEN)
-            #~ self.all_sprites.add(bill)
-            #~ self.green_blobs.add(bill)
-            #~ bill.pos = \
-                #~ (random.randrange(bill.radius, sWidth-bill.radius),\
-                 #~ random.randrange(bill.radius, sHeight-bill.radius))
+            bill = Blob(color=GREEN)
+            self.all_sprites.add(bill)
+            self.green_blobs.add(bill)
+            bill.pos = \
+                (random.randrange(bill.radius, sWidth-bill.radius),\
+                 random.randrange(bill.radius, sHeight-bill.radius))
                  
         #~ # Single testing blob         
         #~ self.bob = Blob(GREEN, (15,15), (-10,10))
@@ -79,7 +79,21 @@ class Game():
             False, True, pg.sprite.collide_circle)
         # Explostion animation
         for crash in  br_collide.values():
-            expl = Explosion(crash[0].pos)
+            expl = Explosion(crash[0].pos, 'red')
+            self.all_sprites.add(expl)
+            
+        # Red blobs destroy green blobs
+        rg_collide = pg.sprite.groupcollide(self.red_blobs, self.green_blobs,\
+            False, True, pg.sprite.collide_circle)
+        for crash in  rg_collide.values():
+            expl = Explosion(crash[0].pos, 'green')
+            self.all_sprites.add(expl)
+            
+        # Green blobs destroy blue blobs
+        rg_collide = pg.sprite.groupcollide(self.green_blobs, self.blue_blobs,\
+            False, True, pg.sprite.collide_circle)
+        for crash in  rg_collide.values():
+            expl = Explosion(crash[0].pos, 'blue')
             self.all_sprites.add(expl)
         
     def draw(self):
@@ -118,13 +132,14 @@ class Game():
                 i.vel.y -= 1
             
     def loadData(self):
-        explosion_anim['red'] = []
-        for i in range(9):
-            filename = 'redExplosion0{}.png'.format(i)
-            img = pg.image.load(os.path.join(\
-                img_dir, filename)).convert_alpha()
-            img = pg.transform.scale(img, (50,50))
-            explosion_anim['red'].append(img)
+        colors = ['red', 'green', 'blue']
+        for color in colors:
+            for i in range(9):
+                filename = '{0}/{0}Explosion0{1}.png'.format(color, i)
+                img = pg.image.load(os.path.join(\
+                    img_dir, filename)).convert_alpha()
+                img = pg.transform.scale(img, (50,50))
+                explosion_anim[color].append(img)
     
     def waitForEsc(self):
         pressed = pg.key.get_pressed()

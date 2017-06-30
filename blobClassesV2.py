@@ -49,7 +49,6 @@ class Blob(pg.sprite.Sprite):
     def update(self):
         self.move()
     
-    
 class Explosion(pg.sprite.Sprite):
     def __init__(self, center, color):
         super().__init__()
@@ -60,21 +59,42 @@ class Explosion(pg.sprite.Sprite):
         self.pos = center
         self.rect.center = self.pos
         self.radius = 0
-        self.frame = 0
+        self.currentFrame = 0
         self.last_update = 0
-        self.frameRate = 25
+        self.frameRate = 50
     
     def update(self):
-        now = pg.time.get_ticks()
-        if now - self.last_update > self.frameRate:
-            self.frame += 1
-            self.last_update = now
-            if self.frame == len(explosion_anim[self.color]):
-                self.kill()
-            else:
-                currentPos = self.rect.center
-                self.image = explosion_anim[self.color][self.frame]
-                self.rect = self.image.get_rect()
-                self.rect.center = currentPos
+        animate(self, explosion_anim, self.color, True)
         
+class Powerup(pg.sprite.Sprite):
+    def __init__(self, loc, whichOne):
+        super().__init__()
+        
+        self.whichOne = whichOne
+        self.image = powerup_anim[self.whichOne][0]
+        self.rect = self.image.get_rect()
+        self.pos = loc
+        self.rect.center = self.pos
+        self.radius = self.rect.width
+        self.currentFrame = 0
+        self.last_update = 0
+        self.frameRate = 100
+
+    def update(self):
+        animate(self, powerup_anim, self.whichOne)
+        
+
+def animate(sprite, dictionary, whichList, delete=False):
+    now = pg.time.get_ticks()
+    if now - sprite.last_update > sprite.frameRate:
+        sprite.last_update = now
+        sprite.currentFrame += 1
+        if sprite.currentFrame == len(dictionary[whichList]):
+            if delete == True:
+                sprite.kill()
+        sprite.currentFrame %= (len(dictionary[whichList]))
+        currentPos = sprite.rect.center
+        sprite.image = dictionary[whichList][sprite.currentFrame]
+        sprite.rect = sprite.image.get_rect()
+        sprite.rect.center = currentPos
         

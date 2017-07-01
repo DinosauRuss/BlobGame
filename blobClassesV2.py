@@ -58,7 +58,7 @@ class Explosion(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.pos = center
         self.rect.center = self.pos
-        self.radius = 0
+        self.radius =0
         self.currentFrame = 0
         self.last_update = 0
         self.frameRate = 50
@@ -67,21 +67,23 @@ class Explosion(pg.sprite.Sprite):
         animate(self, explosion_anim, self.color, True)
         
 class Powerup(pg.sprite.Sprite):
-    def __init__(self, loc, whichOne):
+    def __init__(self, loc, whichOne, animate, radius=25):
         super().__init__()
         
         self.whichOne = whichOne
+        self.animate = animate
         self.image = powerup_anim[self.whichOne][0]
         self.rect = self.image.get_rect()
         self.pos = loc
         self.rect.center = self.pos
-        self.radius = self.rect.width
+        self.radius = radius
         self.currentFrame = 0
         self.last_update = 0
         self.frameRate = 100
 
     def update(self):
-        animate(self, powerup_anim, self.whichOne)
+        if self.animate == True:
+            animate(self, powerup_anim, self.whichOne)
         
 
 def animate(sprite, dictionary, whichList, delete=False):

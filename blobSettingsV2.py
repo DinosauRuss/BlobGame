@@ -18,7 +18,9 @@ img_dir = os.path.join(os.path.dirname(__file__), 'images')
 
 explosion_anim = {'red': [],
                   'green': [],
-                  'blue': []}
+                  'blue': [],
+                  'watermelon': []}
 
-powerup_anim = {'gold_coin': []}
+powerup_anim = {'gold_coin': [],
+                'watermelon': []}
 

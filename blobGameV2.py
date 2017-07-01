@@ -13,8 +13,10 @@ class Game():
         self.screen = screen
         self.program_running = True
         self.colors = ['red', 'green', 'blue']
-        self.lastPowerup = 0
-        self.powerupDelay = 10000
+        self.lastCoin = 0
+        self.coinDelay = 2000
+        self.lastMelon = 0
+        self.melonDelay = 2000
         
     def new(self):
         self.loadData()
@@ -36,20 +38,20 @@ class Game():
             bob.pos = \
                 (random.randrange(bob.radius, sWidth-bob.radius),\
                  random.randrange(bob.radius, sHeight-bob.radius))
-            
-            george = Blob(color=RED)
-            self.all_sprites.add(george)
-            self.red_blobs.add(george)
-            george.pos = \
-                (random.randrange(george.radius, sWidth-george.radius),\
-                 random.randrange(george.radius, sHeight-george.radius))
-            
-            bill = Blob(color=GREEN)
-            self.all_sprites.add(bill)
-            self.green_blobs.add(bill)
-            bill.pos = \
-                (random.randrange(bill.radius, sWidth-bill.radius),\
-                 random.randrange(bill.radius, sHeight-bill.radius))
+            #~ 
+            #~ george = Blob(color=RED)
+            #~ self.all_sprites.add(george)
+            #~ self.red_blobs.add(george)
+            #~ george.pos = \
+                #~ (random.randrange(george.radius, sWidth-george.radius),\
+                 #~ random.randrange(george.radius, sHeight-george.radius))
+            #~ 
+            #~ bill = Blob(color=GREEN)
+            #~ self.all_sprites.add(bill)
+            #~ self.green_blobs.add(bill)
+            #~ bill.pos = \
+                #~ (random.randrange(bill.radius, sWidth-bill.radius),\
+                 #~ random.randrange(bill.radius, sHeight-bill.radius))
         
         self.run()       
         
@@ -101,38 +103,56 @@ class Game():
             expl = Explosion(crash[0].pos, 'blue')
             self.all_sprites.add(expl)
         
+        # Spawn coins randomly
+        self.lastCoin, self.coinDelay = self.spawnRandomPowerup(\
+            'gold_coin', self.lastCoin, self.coinDelay, True, 20)
+            
+        # Spawn watermelons randomly
+        self.lastMelon, self.melonDelay = self.spawnRandomPowerup(\
+            'watermelon', self.lastMelon, self.melonDelay, False)
+            
+        # Touching powerup adds sprites of same color,
+        # watermelon explodes on contact taking blob with it
+        p_collide = pg.sprite.groupcollide(self.all_sprites, self.powerups,\
+            False, True, pg.sprite.collide_circle)
+        for blob, pUp in p_collide.items():
+            if pUp[0].whichOne == 'gold_coin':
+                for j in range(5):
+                    b = Blob(blob.color)
+                    self.all_sprites.add(b)
+                    b.pos = vect(random.randrange(20, sWidth-20),\
+                             random.randrange(40, sHeight-20))
+                    if blob.color == RED:
+                        self.red_blobs.add(b)
+                    elif blob.color == GREEN:
+                        self.green_blobs.add(b)
+                    elif blob.color == BLUE:
+                        self.blue_blobs.add(b)
+            if pUp[0].whichOne == 'watermelon':
+                blob.kill()
+                expl = Explosion(pUp[0].pos, 'watermelon')
+                expl.frameRate = 30
+                self.all_sprites.add(expl)
+    
+    def spawnRandomPowerup(self, powerup, prev_spawn, delay, animate, *args):
         # Spawn powerup randomly
         now = pg.time.get_ticks()
-        if now - self.lastPowerup > self.powerupDelay:
-            self.lastPowerup = now
-            self.powerupDelay = random.choice((20000, 40000, 60000))
+        if now - prev_spawn > delay:
+            prev_spawn = now
+            delay = random.randrange(20000, 60000, 5000)
             randLocation =\
                     (random.randrange(20, sWidth-20),\
                      random.randrange(20, sHeight-20))
-            steven = Powerup(vect(randLocation), 'gold_coin')
+            steven = Powerup(vect(randLocation), powerup, animate, *args)
             self.powerups.add(steven)
-            
-        # Touching powerup adds sprites of same color
-        p_collide = pg.sprite.groupcollide(self.all_sprites, self.powerups, False, True)
-        for blob in p_collide:
-            for j in range(5):
-                b = Blob(blob.color)
-                self.all_sprites.add(b)
-                b.pos = vect(random.randrange(20, sWidth-20),\
-                         random.randrange(40, sHeight-20))
-                if blob.color == RED:
-                    self.red_blobs.add(b)
-                elif blob.color == GREEN:
-                    self.green_blobs.add(b)
-                elif blob.color == BLUE:
-                    self.blue_blobs.add(b)
+        return prev_spawn, delay
         
     def draw(self):
         #draw graphics
         self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen)
         self.powerups.draw(self.screen)
-        pg.draw.line(self.screen, GREY, (0,25), (sWidth,20), 3)
+        pg.draw.line(self.screen, GREY, (0,25), (sWidth,25), 3)
         r = self.drawText('Reds: {:02d}'.format(len(self.red_blobs)), 25,\
             RED, 10, 5)
         g = self.drawText('Greens: {:02d}'.format(len(self.green_blobs)),\
@@ -161,8 +181,8 @@ class Game():
                 if i.pos.x > sWidth - (i.radius):
                     i.pos.x = sWidth - (i.radius)
                     i.vel.x -= 1
-                if i.pos.y < 20 + (i.radius):
-                    i.pos.y = 20 + (i.radius)
+                if i.pos.y < 25 + (i.radius):
+                    i.pos.y = 25 + (i.radius)
                     i.vel.y += 1
                 if i.pos.y > sHeight - (i.radius):
                     i.pos.y = sHeight - (i.radius)
@@ -199,12 +219,21 @@ class Game():
                 
         # Load gold coin powerup images
         for i in range(6):
-            filename = 'gold_{}.png'.format(i)
+            filename = 'powerups/coin/gold_{}.png'.format(i)
             img = pg.image.load(os.path.join(img_dir, filename)).convert_alpha()
-            #~ img = pg.transform.scale(img, (75,75))
             img = self.scaleImg(img, None, 35)
             powerup_anim['gold_coin'].append(img)
-    
+            
+        # Load watermelon explosion
+        for i in range(10):
+            filename = 'powerups/watermelon/watermelon_{}.png'.format(i)
+            img = pg.image.load(os.path.join(img_dir, filename)).convert_alpha()
+            #~ img = self.scaleImg(img, None, 35)
+            explosion_anim['watermelon'].append(img)
+        
+        # Watermelon powerup image
+        powerup_anim['watermelon'].append(explosion_anim['watermelon'][0])
+            
     def waitForKey(self):
         waiting = True
         while waiting:

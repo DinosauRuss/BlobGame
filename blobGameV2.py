@@ -14,9 +14,9 @@ class Game():
         self.program_running = True
         self.colors = ['red', 'green', 'blue']
         self.lastCoin = 0
-        self.coinDelay = 2000
+        self.coinDelay = 5000
         self.lastMelon = 0
-        self.melonDelay = 2000
+        self.melonDelay = 1000
         
     def new(self):
         self.loadData()
@@ -38,20 +38,20 @@ class Game():
             bob.pos = \
                 (random.randrange(bob.radius, sWidth-bob.radius),\
                  random.randrange(bob.radius, sHeight-bob.radius))
-            #~ 
-            #~ george = Blob(color=RED)
-            #~ self.all_sprites.add(george)
-            #~ self.red_blobs.add(george)
-            #~ george.pos = \
-                #~ (random.randrange(george.radius, sWidth-george.radius),\
-                 #~ random.randrange(george.radius, sHeight-george.radius))
-            #~ 
-            #~ bill = Blob(color=GREEN)
-            #~ self.all_sprites.add(bill)
-            #~ self.green_blobs.add(bill)
-            #~ bill.pos = \
-                #~ (random.randrange(bill.radius, sWidth-bill.radius),\
-                 #~ random.randrange(bill.radius, sHeight-bill.radius))
+            
+            george = Blob(color=RED)
+            self.all_sprites.add(george)
+            self.red_blobs.add(george)
+            george.pos = \
+                (random.randrange(george.radius, sWidth-george.radius),\
+                 random.randrange(george.radius, sHeight-george.radius))
+            
+            bill = Blob(color=GREEN)
+            self.all_sprites.add(bill)
+            self.green_blobs.add(bill)
+            bill.pos = \
+                (random.randrange(bill.radius, sWidth-bill.radius),\
+                 random.randrange(bill.radius, sHeight-bill.radius))
         
         self.run()       
         
@@ -140,11 +140,23 @@ class Game():
         if now - prev_spawn > delay:
             prev_spawn = now
             delay = random.randrange(20000, 60000, 5000)
-            randLocation =\
-                    (random.randrange(20, sWidth-20),\
-                     random.randrange(20, sHeight-20))
-            steven = Powerup(vect(randLocation), powerup, animate, *args)
+            
+            # Don't let spawn onto current blob
+            touching = True
+            while touching:
+                randLocation =\
+                        (random.randrange(20, sWidth-20),\
+                         random.randrange(20, sHeight-20))
+                steven = Powerup(vect(randLocation), powerup, animate, *args)
+                if pg.sprite.spritecollide(steven, self.all_sprites,\
+                    False, pg.sprite.collide_circle):
+                        
+                    steven.kill()
+                    print('touch')
+                    continue
+                touching = False
             self.powerups.add(steven)
+            
         return prev_spawn, delay
         
     def draw(self):
@@ -152,6 +164,8 @@ class Game():
         self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen)
         self.powerups.draw(self.screen)
+        
+        # Draw 'scores' on screen
         pg.draw.line(self.screen, GREY, (0,25), (sWidth,25), 3)
         r = self.drawText('Reds: {:02d}'.format(len(self.red_blobs)), 25,\
             RED, 10, 5)
@@ -159,6 +173,7 @@ class Game():
             25, GREEN, r.width+15, 5)
         b = self.drawText('Blues: {:02d}'.format(len(self.blue_blobs)),\
             25, BLUE, r.width+g.width+20, 5)
+            
         pg.display.flip()
     
     def drawText(self, text, size, color, x, y):

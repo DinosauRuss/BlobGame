@@ -35,6 +35,7 @@ class Blob(pg.sprite.Sprite):
         now = pg.time.get_ticks()
         if now - self.lastMove > 1000:
             self.lastMove = now
+            self.pos = vect(self.pos)
             # New target within movement radius of blob
             self.target = (random.randint(int(self.pos.x)-self.move_range, int(self.pos.x)+self.move_range),\
                            random.randint(int(self.pos.y)-self.move_range, int(self.pos.y)+self.move_range))

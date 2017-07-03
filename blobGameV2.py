@@ -12,6 +12,7 @@ class Game():
         self.fontName = pg.font.match_font(FONT_NAME)
         self.screen = screen
         self.program_running = True
+        self.winner = None
         self.colors = ['red', 'green', 'blue']
         self.lastCoin = 0
         self.coinDelay = 5000
@@ -74,6 +75,17 @@ class Game():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     self.waitForKey()
+                
+                # Remove entire blob group, for testing    
+                if event.key == pg.K_b:
+                    self.all_sprites.remove(self.blue_blobs)
+                    self.blue_blobs.empty()
+                if event.key == pg.K_g:
+                    self.all_sprites.remove(self.green_blobs)
+                    self.green_blobs.empty()
+                if event.key == pg.K_r:
+                    self.all_sprites.remove(self.red_blobs)
+                    self.red_blobs.empty()
     
     def update(self):
         # run all sprites update functions
@@ -133,6 +145,8 @@ class Game():
                 expl = Explosion(pUp[0].pos, 'watermelon')
                 expl.frameRate = 30
                 self.all_sprites.add(expl)
+                
+        self.checkForWinner()
     
     def spawnRandomPowerup(self, powerup, prev_spawn, delay, animate, *args):
         # Spawn powerup randomly
@@ -152,7 +166,6 @@ class Game():
                     False, pg.sprite.collide_circle):
                         
                     steven.kill()
-                    print('touch')
                     continue
                 touching = False
             self.powerups.add(steven)
@@ -176,12 +189,15 @@ class Game():
             
         pg.display.flip()
     
-    def drawText(self, text, size, color, x, y):
+    def drawText(self, text, size, color, x, y, where='topleft'):
         # Draw some text to the screen
         font = pg.font.Font(self.fontName, size)
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
-        text_rect.topleft = (x,y)
+        if where == 'topleft':
+            text_rect.topleft = (x,y)
+        elif where == 'center':
+            text_rect.center = (x,y)
         self.screen.blit(text_surface, text_rect)
         return text_rect
     
@@ -204,6 +220,32 @@ class Game():
                     i.vel.y -= 1
             except:
                 pass
+    
+    def checkForWinner(self):
+        # Check for winning color
+        zeros = 0
+        blobs = {'Blues': self.blue_blobs, 
+                  'Greens': self.green_blobs, 
+                  'Reds': self.red_blobs}
+        for k,v in blobs.items():
+            if len(v) == 0:
+                zeros += 1
+        
+        if zeros == 2:
+            for k, v in blobs.items():
+                if len(v) != 0:
+                    self.winner = k
+            self.playing = False
+            self.program_running = False
+    
+    def showEndScreen(self):
+        # Display when winning color emerges
+        self.screen.fill(BLACK)
+        winner = self.drawText('{} win!'.format(self.winner), 75, GREY,\
+            sWidth/2, sHeight/2, 'center')
+                        
+        pg.display.flip()
+        self.waitForKey()
     
     def scaleImg(self, image, maxWidth, maxHeight):
         # Scale images proportionally to a given width or height
@@ -261,7 +303,7 @@ class Game():
                     waiting = False
                     self.programRunning = False
                 
-                if event.type == pg.KEYUP:
+                if event.type == pg.KEYDOWN:
                     waiting = False
     
     def waitForEsc(self):
@@ -279,6 +321,7 @@ def mainLoop():
     game = Game(screen)
     while game.program_running:
         game.new()
+    game.showEndScreen()
 
     pg.quit()
     sys.exit()

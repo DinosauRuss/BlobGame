@@ -13,6 +13,7 @@ class Game():
         self.screen = screen
         self.program_running = True
         self.winner = None
+        self.winningFlag = False
         self.colors = ['red', 'green', 'blue']
         self.lastCoin = 0
         self.coinDelay = 5000
@@ -235,6 +236,7 @@ class Game():
             for k, v in blobs.items():
                 if len(v) != 0:
                     self.winner = k
+            self.winningFlag = True
             self.playing = False
             self.program_running = False
     
@@ -321,7 +323,8 @@ def mainLoop():
     game = Game(screen)
     while game.program_running:
         game.new()
-    game.showEndScreen()
+    if game.winningFlag == True:
+        game.showEndScreen()
 
     pg.quit()
     sys.exit()

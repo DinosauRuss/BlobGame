@@ -12,8 +12,11 @@ class Game():
         self.fontName = pg.font.match_font(FONT_NAME)
         self.screen = screen
         self.program_running = True
+        
         self.winner = None
         self.winningFlag = False
+        self.startTime = pg.time.get_ticks()
+        
         self.colors = ['red', 'green', 'blue']
         self.lastCoin = 0
         self.coinDelay = 5000
@@ -188,6 +191,8 @@ class Game():
         b = self.drawText('Blues: {:02d}'.format(len(self.blue_blobs)),\
             25, BLUE, r.width+g.width+20, 5)
             
+        self.drawText(self.timer(), 25, WHITE, sWidth-10, 5, 'topright')
+            
         pg.display.flip()
     
     def drawText(self, text, size, color, x, y, where='topleft'):
@@ -195,12 +200,23 @@ class Game():
         font = pg.font.Font(self.fontName, size)
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
-        if where == 'topleft':
-            text_rect.topleft = (x,y)
+        
+        if where == 'topright':
+            text_rect.topright = (x,y)
         elif where == 'center':
             text_rect.center = (x,y)
+        else:
+            text_rect.topleft = (x,y)
+            
         self.screen.blit(text_surface, text_rect)
         return text_rect
+    
+    def timer(self):
+        now = pg.time.get_ticks()
+        secs = int((now - self.startTime)/1000)
+        seconds = '{:02d}'.format(secs % 60)
+        minutes = '{:02d}'.format(secs // 60)
+        return '{}:{}'.format(minutes, seconds)
     
     def checkBounds(self):
         # Stay within screen bounds and \
@@ -242,7 +258,6 @@ class Game():
     
     def showEndScreen(self):
         # Display when winning color emerges
-        self.screen.fill(BLACK)
         winner = self.drawText('{} win!'.format(self.winner), 75, GREY,\
             sWidth/2, sHeight/2, 'center')
                         

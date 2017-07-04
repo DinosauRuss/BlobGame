@@ -113,9 +113,9 @@ class Game():
             self.all_sprites.add(expl)
             
         # Green blobs destroy blue blobs
-        rg_collide = pg.sprite.groupcollide(self.green_blobs, self.blue_blobs,\
+        gb_collide = pg.sprite.groupcollide(self.green_blobs, self.blue_blobs,\
             False, True, pg.sprite.collide_circle)
-        for crash in  rg_collide.values():
+        for crash in  gb_collide.values():
             expl = Explosion(crash[0].pos, 'blue')
             self.all_sprites.add(expl)
         
